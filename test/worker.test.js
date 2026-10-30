@@ -450,4 +450,24 @@ test("Worker POST: /extract endpoint validates missing parameters", async () => 
   assert.strictEqual(data.error, "unsupported_provider");
 });
 
+test("Extractors: evaluateStreamtapeExpression handles chained substrings and parentheses without eval", async () => {
+  const { evaluateStreamtapeExpression } = await import("../src/extractors.js");
+
+  // Test 1: Parentheses with chained .substring
+  const expr1 = `'//streamtape.com/get_video?i' + ('xcdd=0A2vDYQz3wIbPQ6&expires=1793436174&ip=GxAsDROSKxSHDN&token=2GsoKzB2CZDn').substring(1).substring(2)`;
+  const res1 = evaluateStreamtapeExpression(expr1);
+  assert.strictEqual(res1, "//streamtape.com/get_video?id=0A2vDYQz3wIbPQ6&expires=1793436174&ip=GxAsDROSKxSHDN&token=2GsoKzB2CZDn");
+
+  // Test 2: Substring cutting off xcd
+  const expr2 = `'//streamtape.com/get_' + ('xcdvideo?id=0A2v').substring(3)`;
+  const res2 = evaluateStreamtapeExpression(expr2);
+  assert.strictEqual(res2, "//streamtape.com/get_video?id=0A2v");
+
+  // Test 3: Slice
+  const expr3 = `'//streamtape.com/get_' + ('abcvideo?id=test').slice(3)`;
+  const res3 = evaluateStreamtapeExpression(expr3);
+  assert.strictEqual(res3, "//streamtape.com/get_video?id=test");
+});
+
+
 

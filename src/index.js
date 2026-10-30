@@ -338,6 +338,8 @@ async function executeExtractionAndSession(provider, id, meta, env, workerBaseUr
     playback_url: playbackUrl,
     url: playbackUrl,
     direct_url: extracted.streamUrl,
+    tapecontent_url: extracted.tapecontentUrl || extracted.streamUrl,
+    get_video_url: extracted.getVideoUrl || "",
     stream_type: extracted.streamType,
     title: extracted.title,
     video_id: session.videoId,
