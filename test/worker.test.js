@@ -212,6 +212,42 @@ test("Worker POST: Successfully creates session with unguessable URL", async () 
   assert.ok(json.expires_at > Date.now() / 1000);
 });
 
+test("Worker POST: Generates stream.mkv and video.mp4 URLs for direct media files", async () => {
+  const env = { WORKER_SECRET: "test-secret" };
+
+  // MKV test
+  const reqMkv = new Request("https://worker-1.example.workers.dev/session", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "X-Worker-Key": "test-secret" },
+    body: JSON.stringify({
+      url: "https://r2.cloudflarestorage.com/hub/movie.1080p.mkv?token=123",
+      videoId: "101",
+      type: "movie"
+    })
+  });
+  const resMkv = await worker.fetch(reqMkv, env);
+  assert.strictEqual(resMkv.status, 201);
+  const jsonMkv = await resMkv.json();
+  assert.strictEqual(jsonMkv.success, true);
+  assert.match(jsonMkv.playback_url, /^https:\/\/worker-1\.example\.workers\.dev\/session\/.+\/stream\.mkv$/);
+
+  // MP4 test
+  const reqMp4 = new Request("https://worker-1.example.workers.dev/session", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "X-Worker-Key": "test-secret" },
+    body: JSON.stringify({
+      url: "https://r2.cloudflarestorage.com/hub/movie.1080p.mp4?token=123",
+      videoId: "102",
+      type: "movie"
+    })
+  });
+  const resMp4 = await worker.fetch(reqMp4, env);
+  assert.strictEqual(resMp4.status, 201);
+  const jsonMp4 = await resMp4.json();
+  assert.strictEqual(jsonMp4.success, true);
+  assert.match(jsonMp4.playback_url, /^https:\/\/worker-1\.example\.workers\.dev\/session\/.+\/video\.mp4$/);
+});
+
 test("Worker POST: Rejects request with missing url", async () => {
   const req = new Request("https://worker.test/session", {
     method: "POST",

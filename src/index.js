@@ -210,7 +210,14 @@ async function handleCreateSession(request, env, workerBaseUrl) {
   }, env);
 
   const cleanBase = workerBaseUrl.replace(/\/+$/, "");
-  const playbackUrl = `${cleanBase}/session/${session.id}/master.m3u8`;
+  const isMKV = upstreamUrl.includes(".mkv") || (body.stream_type === "mkv") || (body.type === "mkv");
+  const isMP4 = upstreamUrl.includes(".mp4") || (body.stream_type === "mp4") || (body.type === "mp4");
+  let playbackUrl = `${cleanBase}/session/${session.id}/master.m3u8`;
+  if (isMKV) {
+    playbackUrl = `${cleanBase}/session/${session.id}/stream.mkv`;
+  } else if (isMP4) {
+    playbackUrl = `${cleanBase}/session/${session.id}/video.mp4`;
+  }
 
   return jsonResponse({
     success: true,
